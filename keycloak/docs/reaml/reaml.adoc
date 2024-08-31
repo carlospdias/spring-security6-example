@@ -1,0 +1,34 @@
+== Criação de Realm de Trabalho
+
+=== Crie um REALM com o nome postagem
+image::novo-realm.jpeg["Novo Realm"]  
+
+=== Escreva o Nome do REALM, nesse caso, postagem.
+image::reaml-postagem.jpeg["Novo Realm Postagem"]  
+
+=== Crie um Cliente
+image::criacao-cliente-acesso.jpeg["Novo Cliente de Acesso no Realm Postagem"]  
+
+=== Crie um Cliente para o Postagem
+image::create-client-postagem.jpeg["Novo Cliente  de Acesso no Realm Postagem Para o Postagem"]  
+
+=== Configure esse cliente
+image::capatibility-config.jpeg["Novo Cliente  de Acesso no Realm Postagem Para o Postagem"]  
+
+
+=== Login Settings
+image::login-settings.jpeg["Novo Cliente  de Acesso no Realm Postagem Para o Postagem"]  
+
+
+=== Client Secret
+image::client-secret.jpeg["Capture o Client Secret"] 
+LFyvAC6yvuFky6lDOYNbJ6hGvrohhuGO
+
+
+=== Role
+image::criacao-role.jpeg["Criação de Role"] 
+
+
+=== Role Name
+image::role-name.jpeg["Criação de Role"] 
+

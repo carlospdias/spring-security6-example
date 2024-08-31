@@ -1,0 +1,21 @@
+== Criação de Realm de Trabalho
+
+=== Crie um Novo Usuário Real
+image::novo-usuario.jpeg["Novo Usuário"]  
+
+
+=== Crie um Novo Usuário Real
+image::create-user-name.jpeg["Novo Usuário"]  
+
+
+=== Crie uma senha de acesso
+image::add-senha.jpeg["Novo Usuário"]  
+
+
+
+=== Atribua uma senha
+image::set-password.jpeg["Novo Usuário"]  
+
+
+=== Atribua uma ROLE
+image::atribuicao-role.jpeg["Atribua uma Role para o Usuário"]  
