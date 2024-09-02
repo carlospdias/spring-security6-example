@@ -23,3 +23,45 @@ $ npx tailwindcss -i ./src/input.css -o ./postagem-main.css --watch
  - [create_the_java_files](https://developers.redhat.com/articles/2023/07/24/how-integrate-spring-boot-3-spring-security-and-keycloak#create_the_java_files)
  - [core](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html)
  - [Aula 3 Keycloak - Client Scopes e Atributos](https://www.youtube.com/watch?v=BNwaPazP-rY)
+
+
+## Lista Final
+/*@Bean
+public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
+KeyPairGenerator keyPairGenerator =  KeyPairGenerator.getInstance("RSA");
+
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+        RSAPublicKey publicKey   = (RSAPublicKey) keyPair.getPublic();
+        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
+
+        RSAKey rsaKey = new RSAKey.Builder(publicKey)
+                .privateKey(privateKey)
+                .keyID(UUID.randomUUID().toString())
+                .build();
+
+        JWKSet jwkSet = new JWKSet(rsaKey);
+        return new ImmutableJWKSet<>(jwkSet);
+    }*/]
+
+
+ - https://medium.com/@wahyubagus1910/securing-spring-boot-with-keycloak-b352f05575f2
+ - https://github.com/wahyubagus-ars/spring-oauth-keycloak/blob/master/src/main/java/com/ars/authservice/domain/dto/LoginRequestDto.java
+ - https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager
+ - https://stackoverflow.com/questions/76823906/http-exceptionhandler-deprecated-and-removed-in-spring-6-2
+ - https://docs.spring.io/spring-security/reference/servlet/getting-started.html
+ - https://www.baeldung.com/spring-data-redis-tutorial
+ - https://docs.spring.io/spring-security/reference/modules.html
+ - https://developers.redhat.com/articles/2023/07/24/how-integrate-spring-boot-3-spring-security-and-keycloak#test_the_application
+ - https://docs.spring.io/spring-security/reference/reactive/oauth2/login/core.html
+ - https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html#_storing_the_authorization_request
+ - https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html
+ - https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html
+ - https://docs.spring.io/spring-security/reference/servlet/oauth2/login/advanced.html#oauth2login-advanced-redirection-endpoint
+ - 
+ - https://medium.com/@mayankit3/migrating-from-spring-security-5-6-5-to-newer-version-70c396f7b506
+ - https://medium.com/@wahyubagus1910/securing-spring-boot-with-keycloak-b352f05575f2
+ - https://docs.spring.io/spring-security/reference/servlet/oauth2/index.html
+ - https://docs.spring.io/spring-security/reference/servlet/oauth2/index.html#oauth2-client-enable-extension-grant-type
+ - 
