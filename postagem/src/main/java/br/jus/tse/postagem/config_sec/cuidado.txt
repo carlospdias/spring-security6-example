@@ -1,0 +1,145 @@
+ http.authorizeHttpRequests( aut ->
+                aut.requestMatchers("/public").permitAll()
+                        .anyRequest().authenticated()
+
+        ).oauth2Login((oauth2)->{
+
+            oauth2.authorizationEndpoint(authep->{
+                authep.baseUri("/qui-login");
+                authep.authorizationRequestResolver()
+
+            });
+            oauth2.redirectionEndpoint(null);
+            oauth2.tokenEndpoint(null);
+            oauth2.userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()));
+            oauth2.clientRegistrationRepository(clientRegistrationRepository());
+            oauth2.authorizedClientService(null);
+
+        }).logout(logout -> logout.logoutSuccessHandler(oidcLogoutSuccessHandler()))
+
+        ;
+        return http.build();
+    }
+    private LogoutSuccessHandler oidcLogoutSuccessHandler() {
+        OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler =
+                new OidcClientInitiatedLogoutSuccessHandler(this.clientRegistrationRepository());
+
+        // Sets the location that the End-User's User Agent will be redirected to
+        // after the logout has been performed at the Provider
+        oidcLogoutSuccessHandler.setPostLogoutRedirectUri("{baseUrl}");
+
+        return oidcLogoutSuccessHandler;
+    }
+    private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        final OidcUserService delegate = new OidcUserService();
+
+        return (userRequest) -> {
+            // Delegate to the default implementation for loading a user
+            OidcUser oidcUser = delegate.loadUser(userRequest);
+
+            OAuth2AccessToken accessToken = userRequest.getAccessToken();
+            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+
+            // TODO
+            // 1) Fetch the authority information from the protected resource using accessToken
+            // 2) Map the authority information to one or more GrantedAuthority's and add it to mappedAuthorities
+
+            // 3) Create a copy of oidcUser but use the mappedAuthorities instead
+            ClientRegistration.ProviderDetails providerDetails = userRequest.getClientRegistration().getProviderDetails();
+            String userNameAttributeName = providerDetails.getUserInfoEndpoint().getUserNameAttributeName();
+            if (StringUtils.hasText(userNameAttributeName)) {
+                oidcUser = new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo(), userNameAttributeName);
+            } else {
+                oidcUser = new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
+            }
+
+            return oidcUser;
+        };
+    }
+
+    /*private GrantedAuthoritiesMapper userAuthoritiesMapper() {
+        return (authorities) -> {
+            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+
+            authorities.forEach((authority) -> {
+                GrantedAuthority mappedAuthority;
+
+                if (authority instanceof OidcUserAuthority) {
+                    OidcUserAuthority userAuthority = (OidcUserAuthority) authority;
+                    mappedAuthority = new OidcUserAuthority(
+                            "OIDC_USER", userAuthority.getIdToken(), userAuthority.getUserInfo());
+                } else if (authority instanceof OAuth2UserAuthority) {
+                    OAuth2UserAuthority userAuthority = (OAuth2UserAuthority) authority;
+                    mappedAuthority = new OAuth2UserAuthority(
+                            "OAUTH2_USER", userAuthority.getAttributes());
+                } else {
+                    mappedAuthority = authority;
+                }
+
+                mappedAuthorities.add(mappedAuthority);
+            });
+
+            return mappedAuthorities;
+        };
+    }*/
+    @Bean
+    public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory() {
+        OidcIdTokenDecoderFactory idTokenDecoderFactory = new OidcIdTokenDecoderFactory();
+        idTokenDecoderFactory.setJwsAlgorithmResolver(clientRegistration -> MacAlgorithm.HS256);
+        return idTokenDecoderFactory;
+    }
+    @Bean
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+        return new CustomOAuth2AuthorizationRequestRepository();
+    }
+    @Bean
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        return new InMemoryClientRegistrationRepository(this.keycloakClientRegistration());
+    }
+    private ClientRegistration keycloakClientRegistration() {
+        return ClientRegistration.withRegistrationId("postagem")
+                .issuerUri("http://localhost:8080/realms/postagem")
+                .clientId("postagem-cli")
+                .clientSecret("72wJgXbvqeMA1UoddbdPXYBWCNBT22vN")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("{baseUrl}/secured")
+                .scope("openid", "profile", "email", "address", "phone")
+                .authorizationUri("http://localhost:8080/realms/postagem/protocol/openid-connect/auth")
+                .tokenUri("http://localhost:8080/realms/postagem/protocol/openid-connect/token")
+                .userInfoUri("http://localhost:8080/realms/postagem/protocol/openid-connect/userinfo")
+                .userNameAttributeName(IdTokenClaimNames.SUB)
+                .jwkSetUri("http://localhost:8080/realms/postagem/protocol/openid-connect/certs")
+                .clientName("Cliente Postagem")
+                .build();
+    }
+    /*
+    @Bean
+    public ReactiveOAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        final OidcReactiveOAuth2UserService delegate = new OidcReactiveOAuth2UserService();
+
+        return (userRequest) -> {
+            // Delegate to the default implementation for loading a user
+            return delegate.loadUser(userRequest)
+
+                    .flatMap((oidcUser) -> {
+                        OAuth2AccessToken accessToken = userRequest.getAccessToken();
+                        Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+
+                        // TODO
+                        // 1) Fetch the authority information from the protected resource using accessToken
+                        // 2) Map the authority information to one or more GrantedAuthority's and add it to mappedAuthorities
+
+                        // 3) Create a copy of oidcUser but use the mappedAuthorities instead
+                        ProviderDetails providerDetails = userRequest.getClientRegistration().getProviderDetails();
+                        String userNameAttributeName = providerDetails.getUserInfoEndpoint().getUserNameAttributeName();
+                        if (StringUtils.hasText(userNameAttributeName)) {
+                            oidcUser = new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo(), userNameAttributeName);
+                        } else {
+                            oidcUser = new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
+                        }
+
+                        return Mono.just(oidcUser);
+                    });
+        };
+    }*/
