@@ -2,19 +2,21 @@
 package br.jus.tse.postagem.config_sec;
 
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.*;
+
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.ParseException;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -39,26 +41,24 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.security.oauth2.server.resource.introspection.SpringOpaqueTokenIntrospector;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import com.nimbusds.jose.util.JSONObjectUtils;
 
 @Configuration
 public class SecurityBeans {
-
+    
+  
     private ClientRegistration keycloakClientRegistration() {
 
         ClientRegistration build = ClientRegistration.withRegistrationId("postagem")
                 .issuerUri("http://localhost:8080/realms/postagem")
                 .clientId("postagem-cli")
-                .clientSecret("72wJgXbvqeMA1UoddbdPXYBWCNBT22vN")
+                .clientSecret("rmGbnojrmX8dlAc8DuACW3VU9rC7iM6Z")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("{baseUrl}/secured")
@@ -105,7 +105,36 @@ public class SecurityBeans {
         return new SpringOpaqueTokenIntrospector(
                 "https://my-auth-server.com/oauth2/introspect", "my-client-id", "my-client-secret");
     }
+   /* @Bean
+    public JwtDecoder jwtDecoder() {
 
+        JwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(issuerUri).build();
+
+        return new JwtDecoder() {
+            @Override
+            public Jwt decode(String token) throws JwtException {
+                System.out.println("token: " + token);
+                Jwt jwt = jwtDecoder.decode(token);
+                System.out.println("jwt: " + jwt);
+                return jwt;
+            }
+        };
+    }*/
+    /*private String get(String url, String token) {
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(url);
+            httpClient.execute(httpGet, response -> {
+                System.out.println("********************************************");
+                System.out.println(response.getEntity().toString());
+                return response;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }*/
+    
     @Bean
     public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
         final OidcUserService delegate = new OidcUserService();
@@ -115,11 +144,14 @@ public class SecurityBeans {
             OidcUser oidcUser = delegate.loadUser(userRequest);
 
             OAuth2AccessToken accessToken = userRequest.getAccessToken();
-            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+            Collection<GrantedAuthority> mappedAuthorities = new HashSet<>();
             String generatedToken = accessToken.getTokenValue();
+
+            mappedAuthorities = payloadExtractGrants(generatedToken);
 
             // TODO
             // 1) Fetch the authority information from the protected resource using accessToken
+
             // 2) Map the authority information to one or more GrantedAuthority's and add it to mappedAuthorities
 
             // 3) Create a copy of oidcUser but use the mappedAuthorities instead
@@ -131,9 +163,73 @@ public class SecurityBeans {
             } else {
                 oidcUser = new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
             }
-
+      
             return oidcUser;
         };
+    }
+
+    private Map<String, Object> translate(String payload) {
+        try {
+            return JSONObjectUtils.parse(payload);
+        }
+        catch(ParseException pe) {
+            pe.printStackTrace();
+        }
+        return Collections.emptyMap();
+    }
+    private Collection<GrantedAuthority> payloadExtractGrants(String tokenValue) {
+        String[] chunks = tokenValue.split("\\.");
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+        String payload = new String(decoder.decode(chunks[1]));
+        
+        Map<String, Object> claims = translate(payload);
+        
+        Collection<GrantedAuthority> mappedAuthorities = new KeycloakAuthoritiesConverter().convert(claims);
+        return mappedAuthorities;
+    }
+    
+    private class KeycloakAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+
+        @Override
+        public Collection<GrantedAuthority> convert(Jwt jwt) {
+            return convert(jwt.getClaims());
+        }
+
+        public Collection<GrantedAuthority> convert(Map<String, Object> claims) {
+            Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+            for (String authority : getAuthorities(claims)) {
+                if (authority.contains("ADMNISTRADOR")){
+                    grantedAuthorities.add(new SimpleGrantedAuthority("ADMINISTRADOR"));
+                }
+                if (authority.contains("AUTORIZADO")){
+                    grantedAuthorities.add(new SimpleGrantedAuthority("AUTORIZADO"));
+                }
+
+            }
+            return grantedAuthorities;
+        }
+
+        private Collection<String> getAuthorities(Map<String, Object> claims) {
+            Object realm_access = claims.get("realm_access");
+            if (realm_access instanceof Map) {
+                Map<String, Object> map = castAuthoritiesToMap(realm_access);
+                Object roles = map.get("roles");
+                if (roles instanceof Collection) {
+                    return castAuthoritiesToCollection(roles);
+                }
+            }
+            return Collections.emptyList();
+        }
+
+        @SuppressWarnings("unchecked")
+        private Map<String, Object> castAuthoritiesToMap(Object authorities) {
+            return (Map<String, Object>) authorities;
+        }
+
+        @SuppressWarnings("unchecked")
+        private Collection<String> castAuthoritiesToCollection(Object authorities) {
+            return (Collection<String>) authorities;
+        }
     }
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
@@ -164,22 +260,5 @@ public class SecurityBeans {
         return client;
     }
 
-    private String csoe(String token , String url){
-        String resultContent = null;
-        HttpGet httpGet = new HttpGet(url);
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
-                // Get status code
-                System.out.println(response.getVersion()); // HTTP/1.1
-                System.out.println(response.getCode()); // 200
-                System.out.println(response.getReasonPhrase()); // OK
-                HttpEntity entity = response.getEntity();
-                // Get response information
-                resultContent = EntityUtils.toString(entity);
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
-        return resultContent;
-    }
+    
 }

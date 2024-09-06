@@ -6,8 +6,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Map;
-
 @Controller
 @RequestMapping("/")
 public class Autenticacao {
@@ -20,9 +18,10 @@ public class Autenticacao {
 
     @GetMapping("secured/postagem")
     public String coj(){
-        ClientRegistration okta = this.clientRegistrationRepository.findByRegistrationId("postagem");
-
-        System.out.println(okta);
+        ClientRegistration keycloak = this.clientRegistrationRepository.findByRegistrationId("postagem");
+        
+        
+        System.out.println(keycloak);
 
         return "secured";
     }
