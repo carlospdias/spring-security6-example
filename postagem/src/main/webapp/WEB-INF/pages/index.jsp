@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="false" trimDirectiveWhitespaces="true" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" session="true" trimDirectiveWhitespaces="true" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@taglib  prefix="tpl" tagdir="/WEB-INF/tags"   %>
@@ -13,13 +13,43 @@
   <c:out value="${horas}" />
   
    <br />
- <sec:authorize access="hasRole('AUTORIZADO')">
-   <p>This content is only visible to users with the role "autenticado"</p> 
-</sec:authorize>
+    <div style="background-color: red;">
+         <sec:authorize access="hasRole('AUTENTICADO')">
+           <p>This content is only visible to users with the role "autenticado"</p>
+           <sec:authentication property="principal.authorities" />
+        </sec:authorize>
+    </div>
 
- <sec:authentication property="principal" />
-  <hr />
+    <div>
 
-    <sec:authentication property="principal" /> <br />
- <sec:authentication property="principal.email" />
+        <hr />
+        <div style="background-color: green;">
+        <sec:authentication property="principal.attributes" />
+        </div>
+        <div>
+          <sec:authentication property="principal.attributes['preferred_username']" />
+        </div>
+        <div>
+            <sec:authentication property="principal.attributes['given_name']" />
+        </div>
+        <div>
+            <sec:authentication property="principal.attributes['name']" />
+        </div>
+        <div>
+            <sec:authentication property="principal.attributes['family_name']" />
+        </div>
+        <div>
+            <sec:authentication property="principal.attributes['address']" />
+        </div>
+        <div>
+            <sec:authentication property="principal.attributes['auth_time']" />
+        </div>
+
+
+
+
+
+
+    </div>
+
 </tpl:basic>

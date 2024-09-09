@@ -85,7 +85,7 @@ public class SecurityConfig {
     }
     
     
-    private GrantedAuthoritiesMapper userAuthoritiesMapper() {
+   /* private GrantedAuthoritiesMapper userAuthoritiesMapper() {
         return (authorities) -> {
             Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
 
@@ -93,7 +93,7 @@ public class SecurityConfig {
             mappedAuthorities.add(g);
             GrantedAuthority g2 = new SimpleGrantedAuthority("ADMNISTRADOR");
             mappedAuthorities.add(g2);
-
+*/
            /* authorities.forEach(authority -> {
                 if (OidcUserAuthority.class.isInstance(authority)) {
                     OidcUserAuthority oidcUserAuthority = (OidcUserAuthority)authority;
@@ -115,7 +115,7 @@ public class SecurityConfig {
                 }
             });*/
 
-            return mappedAuthorities;
-        };
-    }
+      //      return mappedAuthorities;
+     //   };
+   // }
 }

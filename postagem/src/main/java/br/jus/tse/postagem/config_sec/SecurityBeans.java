@@ -58,7 +58,7 @@ public class SecurityBeans {
         ClientRegistration build = ClientRegistration.withRegistrationId("postagem")
                 .issuerUri("http://localhost:8080/realms/postagem")
                 .clientId("postagem-cli")
-                .clientSecret("rmGbnojrmX8dlAc8DuACW3VU9rC7iM6Z")
+                .clientSecret("TEDMvS1cHmQjOkpXsGnSs2wP8576ukpj")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("{baseUrl}/secured")
@@ -105,36 +105,6 @@ public class SecurityBeans {
         return new SpringOpaqueTokenIntrospector(
                 "https://my-auth-server.com/oauth2/introspect", "my-client-id", "my-client-secret");
     }
-   /* @Bean
-    public JwtDecoder jwtDecoder() {
-
-        JwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(issuerUri).build();
-
-        return new JwtDecoder() {
-            @Override
-            public Jwt decode(String token) throws JwtException {
-                System.out.println("token: " + token);
-                Jwt jwt = jwtDecoder.decode(token);
-                System.out.println("jwt: " + jwt);
-                return jwt;
-            }
-        };
-    }*/
-    /*private String get(String url, String token) {
-
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpGet httpGet = new HttpGet(url);
-            httpClient.execute(httpGet, response -> {
-                System.out.println("********************************************");
-                System.out.println(response.getEntity().toString());
-                return response;
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
-    }*/
-    
     @Bean
     public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
         final OidcUserService delegate = new OidcUserService();
@@ -143,6 +113,10 @@ public class SecurityBeans {
             // Delegate to the default implementation for loading a user
             OidcUser oidcUser = delegate.loadUser(userRequest);
 
+            System.out.println(oidcUser.getAttributes());
+
+            System.out.println(oidcUser.getClaims());
+            System.out.println(oidcUser.getUserInfo());
             OAuth2AccessToken accessToken = userRequest.getAccessToken();
             Collection<GrantedAuthority> mappedAuthorities = new HashSet<>();
             String generatedToken = accessToken.getTokenValue();
@@ -198,11 +172,12 @@ public class SecurityBeans {
         public Collection<GrantedAuthority> convert(Map<String, Object> claims) {
             Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
             for (String authority : getAuthorities(claims)) {
-                if (authority.contains("ADMNISTRADOR")){
-                    grantedAuthorities.add(new SimpleGrantedAuthority("ADMINISTRADOR"));
+                if (authority.contains("ADMINISTRADOR")){
+                    grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR"));
                 }
-                if (authority.contains("AUTORIZADO")){
-                    grantedAuthorities.add(new SimpleGrantedAuthority("AUTORIZADO"));
+                if (authority.contains("AUTENTICADO")){
+                    grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_AUTENTICADO"));
+
                 }
 
             }

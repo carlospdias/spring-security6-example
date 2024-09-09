@@ -1,7 +1,9 @@
 package br.jus.tse.postagem;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -39,4 +41,12 @@ public class IndexController {
         
         return mv;
     }
+    /*
+    @GetMapping("/")
+    public void siei (HttpServletRequest request){
+        Principal principal = request.getUserPrincipal();
+
+        System.out.println(principal.getName());
+        return ""
+    }*/
 }
