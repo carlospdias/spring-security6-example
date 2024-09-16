@@ -13,7 +13,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @Import(SecurityBeans.class)
 @EnableWebSecurity
 public class SecurityConfig {
+    private final KeycloakLogoutHandler keycloakLogoutHandler;
 
+    public SecurityConfig(KeycloakLogoutHandler keycloakLogoutHandler) {
+        this.keycloakLogoutHandler = keycloakLogoutHandler;
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         SecurityBeans securityBeans = new SecurityBeans();
@@ -31,26 +35,28 @@ public class SecurityConfig {
                     });
                 })
             .oauth2Login((auth)->{
-            auth.authorizationEndpoint(authEndpoint ->{
-                authEndpoint.baseUri("/secured");
-                System.out.println("O que vem aqui?");
-            });
+                auth.successHandler(new OAuth2LoginSuccessHandler());
 
-            auth.redirectionEndpoint(redirection ->{
-                redirection.baseUri("/secured");
-                System.out.println("Aqui se faz o redirecionamento");
-            });
+                auth.authorizationEndpoint(authEndpoint ->{
+                    authEndpoint.baseUri("/secured");
+                    System.out.println("O que vem aqui?");
+                });
 
-            auth.tokenEndpoint((token)->{
-                System.out.println("Aqui eu tenho que pegar o token");
-            });
-            auth.userInfoEndpoint((userInfo ->{
-                System.out.println("Aqui se pegam os dados do usuário");
-                userInfo.oidcUserService(securityBeans.oidcUserService());
-                System.out.println("Aqui se pegam os dados do usuário XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                auth.redirectionEndpoint(redirection ->{
+                    redirection.baseUri("/secured");
+                    System.out.println("Aqui se faz o redirecionamento");
+                });
 
-            }));
-        });
+                auth.tokenEndpoint((token)->{
+                    System.out.println("Aqui eu tenho que pegar o token");
+                });
+                auth.userInfoEndpoint((userInfo ->{
+                    System.out.println("Aqui se pegam os dados do usuário");
+                    userInfo.oidcUserService(securityBeans.oidcUserService());
+                    System.out.println("Aqui se pegam os dados do usuário XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+                }));
+        }).logout(logout -> logout.addLogoutHandler(keycloakLogoutHandler).logoutSuccessUrl("/"));
        /* http.oauth2ResourceServer((oauth2)->{
             oauth2.opaqueToken(Customizer.withDefaults());
         });*/
