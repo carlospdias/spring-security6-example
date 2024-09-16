@@ -3,10 +3,8 @@ package br.jus.tse.postagem.config_sec;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -56,11 +54,8 @@ public class SecurityConfig {
                     System.out.println("Aqui se pegam os dados do usuário XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
                 }));
-        }).logout(logout -> logout.addLogoutHandler(keycloakLogoutHandler).logoutSuccessUrl("/"));
-       /* http.oauth2ResourceServer((oauth2)->{
-            oauth2.opaqueToken(Customizer.withDefaults());
-        });*/
-
+        }).logout(logout -> logout.logoutUrl("/logout").addLogoutHandler(keycloakLogoutHandler).logoutSuccessUrl("/"));
+     
 
         return http.build();
     }

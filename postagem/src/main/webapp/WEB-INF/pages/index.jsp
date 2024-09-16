@@ -21,8 +21,7 @@
         </div>
     </div>
      <div>
-         <form method="post" action="<c:url value = "/logout"/>">
-             <input type="submit" value="logout" />
-         </form>
+         <a href="<c:url value = "/logout"/>">Logout</a>
+        
      </div>
 </tpl:basic>

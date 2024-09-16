@@ -11,6 +11,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        response.sendRedirect("http://uol.com.br");
+        
+        response.sendRedirect(request.getContextPath() + "/");
     }
 }
