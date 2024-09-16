@@ -57,8 +57,8 @@ public class SecurityBeans {
 
         ClientRegistration build = ClientRegistration.withRegistrationId("postagem")
                 .issuerUri("http://localhost:8080/realms/postagem")
-                .clientId("postagem-cli")
-                .clientSecret("72wJgXbvqeMA1UoddbdPXYBWCNBT22vN")
+                .clientId("cliente-postagem")
+                .clientSecret("yTpkUIqIPWzkWKXFDsdzKlvcSrfveF1F")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("{baseUrl}/secured")
@@ -68,38 +68,11 @@ public class SecurityBeans {
                 .userInfoUri("http://localhost:8080/realms/postagem/protocol/openid-connect/userinfo")
                 .userNameAttributeName(IdTokenClaimNames.SUB)
                 .jwkSetUri("http://localhost:8080/realms/postagem/protocol/openid-connect/certs")
-                .clientName("Cliente Postagem")
+                .clientName("cliente-postagem")
                 .build();
         return build;
     }
 
-    @Bean
-    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
-
-        return (authorities) -> {
-            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-
-            authorities.forEach((authority) -> {
-                GrantedAuthority mappedAuthority;
-
-                if (authority instanceof OidcUserAuthority) {
-                    OidcUserAuthority userAuthority = (OidcUserAuthority) authority;
-                    mappedAuthority = new OidcUserAuthority(
-                            "OIDC_USER", userAuthority.getIdToken(), userAuthority.getUserInfo());
-                } else if (authority instanceof OAuth2UserAuthority) {
-                    OAuth2UserAuthority userAuthority = (OAuth2UserAuthority) authority;
-                    mappedAuthority = new OAuth2UserAuthority(
-                            "OAUTH2_USER", userAuthority.getAttributes());
-                } else {
-                    mappedAuthority = authority;
-                }
-
-                mappedAuthorities.add(mappedAuthority);
-            });
-
-            return mappedAuthorities;
-        };
-    }
     @Bean
     public OpaqueTokenIntrospector opaqueTokenIntrospector() {
         return new SpringOpaqueTokenIntrospector(
@@ -118,11 +91,7 @@ public class SecurityBeans {
             Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
             String generatedToken = accessToken.getTokenValue();
 
-            // TODO
-            // 1) Fetch the authority information from the protected resource using accessToken
-            // 2) Map the authority information to one or more GrantedAuthority's and add it to mappedAuthorities
-
-            // 3) Create a copy of oidcUser but use the mappedAuthorities instead
+            System.out.println(generatedToken);
             ClientRegistration.ProviderDetails providerDetails = userRequest.getClientRegistration().getProviderDetails();
             String userNameAttributeName = providerDetails.getUserInfoEndpoint().getUserNameAttributeName();
 
@@ -164,22 +133,4 @@ public class SecurityBeans {
         return client;
     }
 
-    private String csoe(String token , String url){
-        String resultContent = null;
-        HttpGet httpGet = new HttpGet(url);
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
-                // Get status code
-                System.out.println(response.getVersion()); // HTTP/1.1
-                System.out.println(response.getCode()); // 200
-                System.out.println(response.getReasonPhrase()); // OK
-                HttpEntity entity = response.getEntity();
-                // Get response information
-                resultContent = EntityUtils.toString(entity);
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
-        return resultContent;
-    }
 }

@@ -7,7 +7,9 @@
    <span class="card">Página Pública de Acesso Irrestrito ${horas}.</span>
   <br />
   <div class="card">
-     <img src="<c:url value = "/assets/img/perfis/publico-640x640.jpg"/>"  alt="640" height="640" alt="Reunião de bonecos estilizados" />
+      <div class="card-body">
+       <img src="<c:url value = "/assets/img/perfis/publico-640x640.jpg"/>"  alt="640" height="640" alt="Reunião de bonecos estilizados" />
+      </div>
    </div>
   <c:out value="${horas}" />
   

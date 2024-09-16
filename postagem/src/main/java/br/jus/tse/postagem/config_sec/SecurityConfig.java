@@ -51,9 +51,9 @@ public class SecurityConfig {
 
             }));
         });
-        http.oauth2ResourceServer((oauth2)->{
+       /* http.oauth2ResourceServer((oauth2)->{
             oauth2.opaqueToken(Customizer.withDefaults());
-        });
+        });*/
 
 
         return http.build();
