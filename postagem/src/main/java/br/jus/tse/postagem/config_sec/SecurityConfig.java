@@ -54,7 +54,11 @@ public class SecurityConfig {
                     System.out.println("Aqui se pegam os dados do usuário XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
                 }));
-        }).logout(logout -> logout.logoutUrl("/logout").addLogoutHandler(keycloakLogoutHandler).logoutSuccessUrl("/"));
+        }).logout(logout -> logout.logoutUrl("/logout")
+                .addLogoutHandler(keycloakLogoutHandler)
+                .invalidateHttpSession(true)  
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessUrl("/"));
      
 
         return http.build();
