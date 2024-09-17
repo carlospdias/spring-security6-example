@@ -22,12 +22,20 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests((auth->{
 
-            auth.requestMatchers("/secured/**","/public/**","/assets/**").permitAll();
+            auth.requestMatchers("/secured/**","/public/**","/assets/**","/invalid-session").permitAll();
             auth.requestMatchers("/administrador").hasAuthority("AUTENTICADO");
 
             auth.anyRequest().authenticated();
 
-        })).oauth2Client((auth)->{
+        }))
+        .sessionManagement((sess)->{
+            
+            sess.invalidSessionUrl("/invalid-session");
+            sess.sessionFixation(fix->fix.changeSessionId());
+            sess.maximumSessions(1);
+           
+        })
+        .oauth2Client((auth)->{
                     auth.authorizationCodeGrant(codeg -> {
                        codeg.accessTokenResponseClient(securityBeans.accessTokenResposeClient());
                     });

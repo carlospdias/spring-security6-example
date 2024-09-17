@@ -45,7 +45,16 @@ public class IndexController {
         
         return mv;
     }
-	
+	@GetMapping("/invalid-session")
+    public ModelAndView sessaoInvalida() {
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("horas", LocalDateTime.now());
+        
+        mv.setViewName("redirect:/");
+        
+        return mv;
+    }
+    
 	
 	@GetMapping("/administrador")
     public ModelAndView administrador() {
