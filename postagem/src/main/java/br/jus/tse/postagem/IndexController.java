@@ -1,14 +1,9 @@
 package br.jus.tse.postagem;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -30,7 +25,6 @@ public class IndexController {
         }
 
         securedData.addObject("horas", LocalDateTime.now());
-        System.out.println("999955555555555555555555555555555555555555555555555555555");
         securedData.setViewName("index");
 		
 		return securedData;
@@ -45,16 +39,6 @@ public class IndexController {
         
         return mv;
     }
-	@GetMapping("/invalid-session")
-    public ModelAndView sessaoInvalida() {
-        ModelAndView mv = new ModelAndView();
-        mv.addObject("horas", LocalDateTime.now());
-        
-        mv.setViewName("redirect:/");
-        
-        return mv;
-    }
-    
 	
 	@GetMapping("/administrador")
     public ModelAndView administrador() {
