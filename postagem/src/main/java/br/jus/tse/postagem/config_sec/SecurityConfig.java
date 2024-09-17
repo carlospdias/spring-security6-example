@@ -51,8 +51,7 @@ public class SecurityConfig {
                 auth.userInfoEndpoint((userInfo ->{
                     System.out.println("Aqui se pegam os dados do usuário");
                     userInfo.oidcUserService(securityBeans.oidcUserService());
-                    System.out.println("Aqui se pegam os dados do usuário XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-
+   
                 }));
         }).logout(logout -> logout.logoutUrl("/logout")
                 .addLogoutHandler(keycloakLogoutHandler)
@@ -63,4 +62,6 @@ public class SecurityConfig {
 
         return http.build();
     }
+   
+    
 }

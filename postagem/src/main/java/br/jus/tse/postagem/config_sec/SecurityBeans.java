@@ -2,8 +2,13 @@
 package br.jus.tse.postagem.config_sec;
 
 
+import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -37,6 +42,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+
 @Configuration
 public class SecurityBeans {
 
@@ -68,10 +75,11 @@ public class SecurityBeans {
             OidcUser oidcUser = delegate.loadUser(userRequest);
 
             OAuth2AccessToken accessToken = userRequest.getAccessToken();
-            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+            Collection<GrantedAuthority> mappedAuthorities = new HashSet<>();
             String generatedToken = accessToken.getTokenValue();
-
-            System.out.println(generatedToken);
+            mappedAuthorities = payloadExtractGrants(generatedToken);
+            
+           
             ClientRegistration.ProviderDetails providerDetails = userRequest.getClientRegistration().getProviderDetails();
             String userNameAttributeName = providerDetails.getUserInfoEndpoint().getUserNameAttributeName();
 
@@ -104,13 +112,33 @@ public class SecurityBeans {
     @Bean
     public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResposeClient() {
         DefaultAuthorizationCodeTokenResponseClient client = new DefaultAuthorizationCodeTokenResponseClient();
-        RestTemplate restTemplate = new RestTemplate(Arrays.asList(
-                new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
+        RestTemplate restTemplate = new RestTemplate(Arrays.asList( new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
         CloseableHttpClient requestFactory = HttpClientBuilder.create().build();
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(requestFactory));
         restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
         client.setRestOperations(restTemplate);
         return client;
+    }
+    
+    private Map<String, Object> translate(String payload) {
+        try {
+            return JSONObjectUtils.parse(payload);
+        }
+        catch(ParseException pe) {
+            pe.printStackTrace();
+        }
+        return Collections.emptyMap();
+    }
+    private Collection<GrantedAuthority> payloadExtractGrants(String tokenValue) {
+        String[] chunks = tokenValue.split("\\.");
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+        String payload = new String(decoder.decode(chunks[1]));
+        
+        Map<String, Object> claims = translate(payload);
+        
+        Collection<GrantedAuthority> mappedAuthorities = new KeycloakAuthoritiesConverter().convert(claims);
+       
+        return mappedAuthorities;
     }
 
 }
